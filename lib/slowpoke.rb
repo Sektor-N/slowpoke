@@ -35,15 +35,15 @@ module Slowpoke
   end
 end
 
-# remove noisy logger
-Rack::Timeout.unregister_state_change_observer(:logger)
-
-# process protection and notifications
 Rack::Timeout.register_state_change_observer(:slowpoke) do |env|
-  if env[Rack::Timeout::ENV_INFO_KEY].state == :timed_out
+  case env[Rack::Timeout::ENV_INFO_KEY].state
+  when :timed_out
     env[Slowpoke::ENV_KEY] = true
-
-    # TODO better payload
-    ActiveSupport::Notifications.instrument("timeout.slowpoke", {})
+    Process.kill("TTIN", Process.ppid)
+  when :completed
+    if env[Slowpoke::ENV_KEY]
+      Process.kill("QUIT", Process.pid)
+      Process.kill("TTOU", Process.ppid)
+    end
   end
 end
