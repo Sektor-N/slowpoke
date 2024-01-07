@@ -7,7 +7,7 @@ module Slowpoke
     end
 
     def call(env)
-      service_timeout = @service_timeout.call(env)
+      service_timeout = (@service_timeout.call(env)).abs
       if service_timeout
         (@middleware[service_timeout] ||= Rack::Timeout.new(@app, service_timeout: service_timeout)).call(env)
       else

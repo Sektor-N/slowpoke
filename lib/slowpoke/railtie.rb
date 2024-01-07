@@ -17,7 +17,7 @@ module Slowpoke
           service_timeout: service_timeout
       else
         app.config.middleware.insert_after ActionDispatch::DebugExceptions, Rack::Timeout,
-          service_timeout: service_timeout.to_i
+          service_timeout: (service_timeout.to_i).abs
       end
 
       app.config.middleware.insert(0, Slowpoke::Middleware)
